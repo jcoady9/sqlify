@@ -32,12 +32,26 @@ def create_db():
             pass
         if col_num < worksheet.max_column:
             create_cmd += ','
-    #creat_cmd = create_cmd.rstrip()
     create_cmd += ')'
     print(create_cmd)
 
     cursor.execute(create_cmd)
     conn.commit()
+
+    #Populate database
+    rows = list()
+    for row_num in range(2, worksheet.max_row + 1):
+        row = list()
+        for col_num in range(1, worksheet.max_column + 1):
+            cell = worksheet.cell(row=row_num,column=col_num)
+            row.append(cell.value)
+        print(row)
+        rows.append(tuple(row))
+
+    insert_cmd = 'INSERT INTO %s VALUES (%s)' % ('table_name', ','.join(['?' for x in range(0,worksheet.max_column)]))
+    cursor.executemany(insert_cmd, rows)
+    conn.commit()
+
     conn.close()
 
 #TODO: INSERT
