@@ -22,8 +22,7 @@ def create(db_name, spreadsheet_file):
         elif cell.data_type == cell.TYPE_STRING:
             columns.append('{} TEXT'.format(col_name))
         elif cell.is_date:
-            #TODO: DATE COLUMN (ISO8601 Text)
-            raise NotImplementedError('Dates are not yet supported.')
+            columns.append('{} TEXT'.format(col_name))
         else:
             raise NotImplementedError('Datatype not supported.')
 
@@ -72,6 +71,16 @@ def insert(db_name, spreadsheet_file):
     conn.close()
 
 #TODO: UPDATE
+def update(db_name, spreadsheet_file):
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    workbook = openpyxl.load_workbook(spreadsheet_file)
+    worksheet = workbook.active
+
+    select_cmd = "SELECT * FROM {}".format('table_name')
+    cursor.execute(select_cmd)
+
+    conn.close()
 
 #TODO: MAIN
 
