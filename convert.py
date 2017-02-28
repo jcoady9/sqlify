@@ -71,18 +71,40 @@ def insert(db_name, spreadsheet_file):
     conn.close()
 
 #TODO: UPDATE
-def update(db_name, spreadsheet_file):
+def update(db_name, spreadsheet_file, update_on):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     workbook = openpyxl.load_workbook(spreadsheet_file)
     worksheet = workbook.active
 
-    select_cmd = "SELECT * FROM {}".format('table_name')
-    cursor.execute(select_cmd)
+    worksheet_rows = list()
+    for row_num in range(2, worksheet.max_row + 1):
+        row = list()
+        for col_num in range(1, worksheet.max_column + 1):
+            cell = worksheet.cell(row=row_num,column=col_num)
+            row.append(cell.value)
+        print(row)
+        worksheet_rows.append(tuple(row))
 
+    select_cmd = "SELECT * FROM {}".format('table_name')
+    db_rows = cursor.execute(select_cmd)
+
+
+    updatable_rows = list()
+    for row in db_rows:
+        ws_row = worksheet_rows.pop()
+        for i in range(len(row)):
+            if row[i] == ws_row[i]:
+                updatable_rows.append(ws_row)
+                break
+
+    update_cmd = 'UPDATE VALUES {} IN {} WHERE {} = {}'.format(','.join(['?' for x in range(0,worksheet.max_column)], 'table_name', update_on, 15))
+
+    cursor.executemany(update_cmd, updateble_rows)
     conn.close()
 
 #TODO: MAIN
 
 create('test_db.sqlite3', 'test.xlsx')
 insert('test_db.sqlite3', 'test2.xlsx')
+update('test_db.sqlite3', 'test3.xlsx', 15)
